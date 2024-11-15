@@ -4,11 +4,14 @@
  * @Description: demo
  */
 import './App.css';
-import Form from './components/Form1'
+import Form1 from './components/Form1'
+import Form2 from './components/Form2'
 function App() {
   return (
     <div className="App">
-      <Form />
+      <Form1 />
+      <br/>***********************************<br/>
+      <Form2 />
     </div>
   );
 }

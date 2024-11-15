@@ -1,7 +1,7 @@
 /*
  * @Author: chb
  * @Date: 2024-11-14 17:36:14
- * @Description: form1
+ * @Description: form1 最基础的引入
  */
 import { Button, Input } from 'antd'
 import Form, { Field } from 'rc-field-form'
