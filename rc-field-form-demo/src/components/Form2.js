@@ -45,7 +45,7 @@ export default function Form2() {
                   style={{ width: "200px" }}
                 /><br/>
                 {meta.errors.length > 0 && (
-                  <span style={{ color: "red" }}>{meta.errors[0]}</span>
+                  <span style={{ color: "red" }}>{JSON.stringify(meta)}</span>
                 )}
               </div>
             );
