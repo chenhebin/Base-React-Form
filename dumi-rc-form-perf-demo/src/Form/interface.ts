@@ -5,10 +5,10 @@ import React, {ReactNode} from 'react'
  */
 export type FieldProps = {
   name: string, // 表单字段的名称
-  children: ( control: {
+  children: (control: {
     value: any;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  }) => React.ReactNode, // 一个函数类型的子组件，接收一个包含value和onChange的对象作为参数
+  }, meta: Object) => React.ReactNode, // 一个函数类型的子组件，接收一个包含value和onChange的对象作为参数
   rules?: Array<any>, // 验证规则数组，用于校验表单字段的值
   shouldUpdate?: (prevStore: any, nextStore: any) => boolean // 一个确定是否应该更新字段值的函数，比较上一个和下一个状态
 }
@@ -51,5 +51,6 @@ export type FormInstance = {
   getFieldsValue: () => Store;
   setInitialValues: (initialValues: Store, init: Boolean) => void;
   setCallbacks: (callbacks: { onFinish?: (values: Store) => void; onFinishFailed?: (errors: any[]) => void }) => void;
+  validateFields: (nameList: Array<string>) => void;
   submit: () => void;
 }

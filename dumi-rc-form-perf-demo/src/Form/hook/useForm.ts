@@ -1,6 +1,6 @@
-import { useRef } from 'react'
-import { allPromiseFinish } from '../../utils/promiseUtils'
-import type { Store, FormInstance, FieldEntity } from '../interface'
+import {useRef} from 'react'
+import {allPromiseFinish} from '../../utils/promiseUtils'
+import type {FieldEntity, FormInstance, Store} from '../interface'
 
 export class FormStore {
   // 仓库数据源
@@ -18,7 +18,6 @@ export class FormStore {
   // 子item依赖收集
   registerField = (field: FieldEntity) => {
     this.fieldEntities.push(field)
-
     // 返回删除依赖方法
     return () => {
       this.fieldEntities = this.fieldEntities.filter(f => f !== field)
@@ -55,26 +54,27 @@ export class FormStore {
   }
 
   // 校验
-  validateFields = () => {
+  validateFields = async (nameList: Array<string> = []) => {
     const promiseList: Promise<any>[] = [] // 校验result
-    this.fieldEntities.forEach(async (field) => {
-      const { name, rules } = field
-      if (!rules || !rules.length) return
 
-      const promise = field.validateRules()
-      promiseList.push(
-        promise
-          .then(res => ({ name, errors: res })) // 成功就空数组返回即可
-          .catch((errors:any) =>
-            Promise.reject({
-              name: [name],
-              errors,
-            }),
-          ), // 失败信息储存
-      )
+    this.fieldEntities.forEach((field) => {
+      const { name, rules } = field
+      if ((rules && rules.length) && nameList.includes(field.name)) {
+        const promise = field.validateRules()
+        promiseList.push(
+          promise
+            .then(res => ({ name, errors: res })) // 成功就空数组返回即可
+            .catch((errors:any) =>
+              Promise.reject({
+                name: [name],
+                errors,
+              }),
+            ), // 失败信息储存
+        )
+      }
     })
     const summaryPromise = allPromiseFinish(promiseList);
-    const returnPromise = summaryPromise
+    return summaryPromise
       .then(
         () => {
           return Promise.resolve(this.getFieldsValue());
@@ -82,16 +82,12 @@ export class FormStore {
       )
       .catch((results) => {
         // 合并后的promise如果是reject状态就返回错误结果
-        const errorList = results.filter((result:any) => result && result.errors.length);
+        const errorList = results.filter((result: any) => result && result.errors.length);
         return Promise.reject({
           values: this.getFieldsValue(),
           errorFields: errorList
         });
       });
-
-    // 捕获错误
-    returnPromise.catch(e => e);
-    return returnPromise;
   }
   // 设置初始值
   setInitialValues = (initialValues: Store, init: Boolean) => {
@@ -103,8 +99,9 @@ export class FormStore {
   }
   // 提交
   submit = () => {
+    const { fieldEntities } = this
     const { onFinish, onFinishFailed } = this.callbacks
-    this.validateFields().then(values => {
+    this.validateFields(fieldEntities.map(i => i.name)).then(values => {
       try {
         onFinish?.(values)
       } catch (e) {
@@ -123,6 +120,7 @@ export class FormStore {
     getFieldValue: this.getFieldValue,
     getFieldsValue: this.getFieldsValue,
     setInitialValues: this.setInitialValues,
+    validateFields: this.validateFields,
     submit: this.submit
   })
 }

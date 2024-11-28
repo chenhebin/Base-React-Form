@@ -33,7 +33,7 @@ export default function Form2() {
       <Form form={form} onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <Field
             name="username"
-            rules={[{ required: true, message: '请输入账号' }]}
+            rules={[{ required: true, message: '请输入账号', trigger: 'blur' }]}
         >
           {(control, meta) => {
             return (

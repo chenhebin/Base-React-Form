@@ -1,14 +1,26 @@
 import FormContext from "./hook/useFormContext";
 import type {FieldProps, Store} from './interface'
-import React, {useContext, useEffect, useState} from "react";
+
 import RawAsyncValidator from 'async-validator'
+import React, {useContext, useEffect, useState} from "react";
 
+/**
+ * 表单字段组件
+ * @param name
+ * @param children
+ * @param shouldUpdate
+ * @param rules
+ * @constructor
+ */
 const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
+  // form实例
   const form = useContext(FormContext)
+  // field value to show
   const [value, setValue] = useState(() => form?.getFieldValue(name) ?? '')
-
-  let validatePromise: Promise<string[]> | null = null
-  let errors: string[] = []
+  // error info
+  const [errors, setErrors] = useState<Array<string>>([])
+  // check is validated
+  const [validatePromise, setValidatePromise] = useState<Promise<string[]> | null >(null)
 
   /**
    * 监听store变化，更新value
@@ -16,7 +28,10 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
    * @param nextStore
    */
   const onStoreChange = (prevStore: Store, nextStore: Store) => {
-    const _renderFn = () => setValue(form?.getFieldValue(name) ?? '')
+    const _renderFn = () => {
+      setValue(form?.getFieldValue(name) ?? '')
+      validateRules().catch(e => e)
+    }
     // 用户手动更新渲染
     if (Object.prototype.toString.call(shouldUpdate) === '[object Function]') {
       shouldUpdate && shouldUpdate(prevStore, nextStore) && _renderFn()
@@ -30,8 +45,8 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
   useEffect(() => {
     const unregister = form?.registerField({
       name,
-      onStoreChange,
       rules,
+      onStoreChange,
       validateRules
     })
     return () => unregister?.()
@@ -63,9 +78,9 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
    */
   const executeValidate = async (namePath: string, value: any, rules: any[]): Promise<string[]> => {
     for (const rule of rules) {
-      const errors = await validateRule(namePath, value, rule);
-      if (errors.length) {
-        return Promise.reject(errors); // 一旦有错误，立即停止并返回
+      const errorsItem = await validateRule(namePath, value, rule);
+      if (errorsItem.length) {
+        return Promise.reject(errorsItem); // 一旦有错误，立即停止并返回
       }
     }
     return []; // 如果所有规则都通过，返回空数组
@@ -73,7 +88,7 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
   /**
    * 触发校验
    */
-  const validateRules = () => {
+  const validateRules = async () => {
     const _rules = rules || []
     let _errors: string[] = []
     const currentValue = form?.getFieldValue(name)
@@ -81,14 +96,17 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
       try {
         _errors = await executeValidate(name, currentValue, _rules)
       } catch (e: any) {
-        if (Array.isArray(e)) _errors = e
+        if (Array.isArray(e)) {
+          _errors = e
+          setErrors(_errors)
+        }
         else if (typeof e === 'string') _errors = [e]
         else _errors = ['unknown error!']
         return Promise.reject(_errors)
       }
       return _errors
     })()
-    validatePromise = rootPromise
+    setValidatePromise(rootPromise)
     return rootPromise
   }
   /**
@@ -105,11 +123,18 @@ const Field: React.FC<FieldProps> = ({name, children, shouldUpdate, rules}) => {
     }
   }
 
+  /**
+   * 获取error信息
+   */
   const getMetaInfo = () => {
-    return 1
-  }
+    return {
+      name,
+      errors,
+      validated: validatePromise !== null
+    };
+  };
   return <>
-    {children(getControlled())}
+    {children(getControlled(), getMetaInfo())}
   </>
 }
 

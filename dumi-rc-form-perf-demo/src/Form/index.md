@@ -26,7 +26,16 @@ export default () => {
   return (
     <Form form={form} ref={formRef} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Field name="username" rules={[{ required: true, message: 'Please input your username!' }]}>
-        {({ value, onChange }) => <input placeholder="Username" value={value} onChange={onChange} />}
+        {(control, meta) => {
+          return (
+            <div>
+              <input placeholder="Username" {...control} /><br/>
+              {meta.errors.length > 0 && (
+                <span style={{ color: "red" }}>{JSON.stringify(meta)}</span>
+              )}
+            </div>
+          )
+        }}
       </Form.Field>
       <Form.Field name="password" rules={[{ required: true, message: 'Please input your password!' }]}>
         {({ value, onChange }) => <input placeholder="Password" value={value} onChange={onChange} />}
