@@ -1,4 +1,4 @@
-import FormContext from "./hook/useFormContext";
+import FormContext from './hook/FormContext';
 import type {FieldProps, Store} from './interface'
 
 import RawAsyncValidator from 'async-validator'

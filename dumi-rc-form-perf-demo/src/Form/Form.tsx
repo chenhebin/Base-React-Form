@@ -1,6 +1,6 @@
 import React, { ReactNode, forwardRef, useImperativeHandle, useRef } from 'react'
 import { useForm } from './hook/useForm'
-import FormContext from './hook/useFormContext'
+import FormContext from './hook/FormContext'
 import type { FormProps } from './interface'
 
 // FormProps限制form的props入参结构
