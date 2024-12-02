@@ -23,6 +23,9 @@ export default () => {
   const onFinishFailed = (values) => {
     console.log('Validation Failed: ', values)
   }
+  const formChange = (values) => {
+    console.log('formChange: ', values)
+  }
   return (
     <Form onFormChange={formChange} form={form} ref={formRef} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Field name="username" rules={[{ required: true, message: 'Please input your username!' }]}>
